@@ -15,7 +15,6 @@ const twitterClient = new Twitter({
 	accessSecret: process.env.ACCESS_TOKEN_SECRET!,
 }).readWrite;
 
-// 'created_at' | 'description' | 'entities' | 'id' | 'location' | 'name' | 'pinned_tweet_id' | 'profile_image_url' | 'protected' | 'public_metrics' | 'url' | 'username' | 'verified' | 'withheld';
 const main = async () => {
 	const me = await twitterClient.currentUser();
 	const followers = (
@@ -29,6 +28,11 @@ const main = async () => {
 	let count = 0;
 
 	const get_followers_img = new Promise<void>((resolve, reject) => {
+		const LEFT_OFFET = 1200;
+		const GAP = 80;
+		const TOP = 110;
+		const top = [TOP, TOP, TOP + GAP, TOP + GAP];
+		const left = [LEFT_OFFET, LEFT_OFFET + GAP, LEFT_OFFET, LEFT_OFFET + GAP]
 		followers.forEach((follower, index, arr) => {
 			process_image({
 				url: follower.profile_image_url!,
@@ -36,8 +40,8 @@ const main = async () => {
 			}).then(() => {
 				const follower_avatar = {
 					input: `${follower.username}.png`,
-					top: 380,
-					left: parseInt(`${1050 + 120 * index}`),
+					top: top[index],
+					left: left[index],
 				};
 				image_data.push(follower_avatar);
 				count++;
@@ -65,11 +69,11 @@ const process_image = async ({
 		(response) =>
 			new Promise((resolve, reject) => {
 				const rounded_corners = Buffer.from(
-					'<svg><rect x="0" y="0" width="100" height="100" rx="50" ry="50"/></svg>'
+					'<svg><rect x="0" y="0" width="65" height="65" rx="50" ry="50"/></svg>'
 				);
 				resolve(
 					sharp(response.data)
-						.resize(100, 100)
+						.resize(65, 65)
 						.composite([
 							{
 								input: rounded_corners,
@@ -83,78 +87,30 @@ const process_image = async ({
 	);
 };
 
-const create_text = async ({
-	width,
-	height,
-	text,
-}: {
-	width: number;
-	height: number;
-	text: string;
-}) => {
-	try {
-		const svg_img = `
-			<svg width="${width}" height="${height}">
-				<style>
-					.text {
-						font-size: 64px;
-						fill: #000;
-						font-weight: 700;
-					}
-				</style>
-				<text x="0%" y="0%" text-anchor="middle" class="text">${text}</text>
-			</svg>
-		`;
-		const svg_img_buffer = Buffer.from(svg_img);
-		return svg_img_buffer;
-	} catch (error) {
-		console.log(error);
-	}
-};
-
 const draw_image = async (image_data: ImageData) => {
 	try {
-		const hour = new Date().getHours();
-		const welcomeTypes = ['Morning', 'Afternoon', 'Evening'];
-		let welcomeText = '';
-
-		if (hour < 12) welcomeText = welcomeTypes[0];
-		else if (hour < 18) welcomeText = welcomeTypes[1];
-		else welcomeText = welcomeTypes[2];
-
-		const svg_greeting = await create_text({
-			width: 500,
-			height: 100,
-			text: welcomeText,
-		});
-
-		image_data.push({
-			input: svg_greeting,
-			top: 52,
-			left: 220,
-		});
-
-		await sharp('twitter-banner.png')
+		await sharp('banner.png')
 			.composite(image_data)
-			.toFile('new-twitter-banner.png');
+			.toFile('new-banner.png');
 
 		// upload banner to twitter
 		upload_banner(image_data);
 	} catch (error) {
-		console.log(error);
+		console.log('error #2');
+		// console.log(error);
 	}
 };
 
 const upload_banner = async (files: ImageData) => {
 	try {
-		const base64 = await fs.readFileSync('new-twitter-banner.png', {
-			encoding: 'base64',
-		});
-		await twitterClient.v1.updateAccountProfileBanner(base64).then(() => {
-			console.log('Upload to Twitter done');
-			delete_files(files);
-		});
+		await twitterClient.v1
+			.updateAccountProfileBanner('new-banner.png')
+			.then(() => {
+				console.log('Upload to Twitter done');
+				delete_files(files);
+			});
 	} catch (error) {
+		console.log('error #3');
 		console.log(error);
 	}
 };
