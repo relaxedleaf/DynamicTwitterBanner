@@ -1,6 +1,6 @@
 # Description
 
-This project allows you to update your Twitter banner dynamically on an interval of your choice!
+This project allows you to update your Twitter banner dynamically on an interval of your choice! This project is basically a fork with some modifications from [iamspruce/twitter-banner](https://github.com/iamspruce/twitter-banner) who also wrote an article on [freecodecamp.org](https://www.freecodecamp.org/news/create-a-dynamic-twitter-header/)
 
 <br>
 
