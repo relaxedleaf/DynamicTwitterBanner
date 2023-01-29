@@ -1,0 +1,1 @@
+To store all the fetched profile pictures and then delte them after uploading
