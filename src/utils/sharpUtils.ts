@@ -19,11 +19,11 @@ export const process_image = async ({
 		(response) =>
 			new Promise((resolve, reject) => {
 				const rounded_corners = Buffer.from(
-					'<svg><rect x="0" y="0" width="65" height="65" rx="50" ry="50"/></svg>'
+					`<svg><rect x="0" y="0" width="90" height="90" rx="45" ry="45"/></svg>`
 				);
 				resolve(
 					sharp(response.data)
-						.resize(65, 65)
+						.resize(90, 90)
 						.composite([
 							{
 								input: rounded_corners,
